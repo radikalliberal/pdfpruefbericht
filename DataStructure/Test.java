@@ -16,75 +16,75 @@
 
 package DataStructure;
 
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings (" unchecked ")
-public class Test implements Iterable<Segment>{
+public class Test {
     
     private final String name;
-    private final double temperature;
-    private final double humidity;
-    private List<Segment> segments = new ArrayList();
-    private Setup set;
+    private String comment;
+    private final String time;
+    public List<img> images;
+    private String log;
+    public List<Parameter> parameters;
+    private int columns;
 
-    public double getTemp() {
-        return this.temperature;
+    public int getColumns() {
+        return columns;
     }
 
-    public double getHumidity() {
-        return humidity;
+    public void setColumns(int columns) {
+        this.columns = columns;
+    }
+
+    public void addParameter(Parameter para) {
+        parameters.add(para);
+    }
+
+    public Parameter getParameter(int index) {
+        return parameters.get(index);
+    }
+
+    public void setLog(String log) {
+        this.log = log;
+    }
+
+
+    public Test(String zeit, String Name) {
+        this.name = Name;
+        this.time = zeit;
+        this.images = new ArrayList<>();
+        this.parameters = new ArrayList<>();
+    }
+
+    public String getLog() {
+        return log;
     }
 
     public String getName() {
         return name;
     }
 
-    public Test(String n, double t, double h) {
-        this.name = n;
-        this.temperature = t;
-        this.humidity = h;
+    public String getComment() {
+        return comment;
+    }
+
+    public String getTime() {
+        return time;
     }
     
-    public void addSegment(Segment seg) {
-       segments.add(seg);
+    public void addComment(String com) {
+        comment = com;
     }
     
-    public void deleteSegment( int index) {
-        segments.remove(index);
+    public void addImage(img image) {
+        images.add(image);
+    } 
+
+     public img getImage(int index){
+        return images.get(index);
     }
-    
-    public Segment getSegment( int index) {
-        return segments.get(index);
-    }
-
-    @Override
-    public Iterator<Segment> iterator() {
-        return new SegmentIterator();
-    }
-
-    public void addSetup(Setup currentSetup) {
-        this.set = currentSetup;
-    }
-
-    public Setup getSet() {
-        return set;
-    }
-
-    
-    private class SegmentIterator implements Iterator<Segment> {
-
-        int i = 0;
-        @Override
-        public boolean hasNext() { return i<segments.size();}
-        @Override
-        public Segment next() { return (Segment) segments.get(i++);}
-        @Override
-        public void remove(){}
-
-
-    }
-    
+   
+   
     
 }

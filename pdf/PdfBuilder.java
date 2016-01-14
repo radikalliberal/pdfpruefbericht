@@ -18,9 +18,9 @@ package pdf;
 
 import DataStructure.Parameter;
 import DataStructure.Report;
-import DataStructure.Segment;
-import DataStructure.Setup;
 import DataStructure.Test;
+import DataStructure.Setup;
+import DataStructure.Norm;
 import DataStructure.device;
 import DataStructure.img;
 import com.itextpdf.text.Document;
@@ -113,7 +113,7 @@ public class PdfBuilder {
         typesetting (document);
     }
     
-    private void printSetup(Test test)throws IOException, DocumentException {
+    private void printSetup(Norm test)throws IOException, DocumentException {
         Setup set = test.getSet();
         p = new Paragraph("Versuchsaufbau \n", smallerheaderfont);
         p.setAlignment(Element.ALIGN_JUSTIFIED);
@@ -128,7 +128,7 @@ public class PdfBuilder {
     }
     
     private void printTests() throws IOException, DocumentException {
-        for(Test test:report) {
+        for(Norm test:report) {
             document.newPage();
             column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
             p = new Paragraph(test.getName() + "\n\n", headerfont);
@@ -144,8 +144,8 @@ public class PdfBuilder {
         }
     }
 
-    private void printSegments(Test test) throws IOException, DocumentException {
-        for(Segment seg:test) {
+    private void printSegments(Norm test) throws IOException, DocumentException {
+        for(Test seg:test) {
             p = new Paragraph(seg.getName(), smallerheaderfont);
             p.setAlignment(Element.ALIGN_JUSTIFIED);
             column.addElement(p);
@@ -156,7 +156,7 @@ public class PdfBuilder {
         }
     }
 
-    private void printComments(Segment seg) throws DocumentException {
+    private void printComments(Test seg) throws DocumentException {
         if(seg.getComment() != null) {
             p = new Paragraph(seg.getComment(), font);
             p.setAlignment(Element.ALIGN_JUSTIFIED);
@@ -202,7 +202,7 @@ public class PdfBuilder {
     }
     
     private void printDeviceTable() throws DocumentException  {
-        for(Test t :report) {
+        for(Norm t :report) {
             if(t.getSet().devices != null)
                 t.getSet().devices.stream().forEach((d) -> {
                     devices.add(d);
@@ -229,7 +229,7 @@ public class PdfBuilder {
         }
     }
     
-    private void printParameters(Segment seg) throws DocumentException  {
+    private void printParameters(Test seg) throws DocumentException  {
         if(!seg.parameters.isEmpty()){
             p = new Paragraph("\n\nParameter\n\n", smallerheaderfont);
             p.setAlignment(Element.ALIGN_JUSTIFIED);

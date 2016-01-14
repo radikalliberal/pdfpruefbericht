@@ -19,12 +19,12 @@ package DataStructure;
 import java.util.Iterator;
 
 @SuppressWarnings (" unchecked ")
-public class Report implements Iterable<Test>{
+public class Report implements Iterable<Norm>{
 
     private final String  obnr; // Orderbasenummer (Warenwirtschaftssystem)
     private final String  pruefer;
-    private final String  EUT; //Equipemnt under Test
-    private final Test[] tests = new Test[6];
+    private final String  EUT; //Equipemnt under Norm
+    private final Norm[] norms = new Norm[6];
     private int N = 0;
     private final String date;
 
@@ -37,7 +37,7 @@ public class Report implements Iterable<Test>{
         this.pruefer = pruefer;
         this.EUT = EUT;
         this.date = d;
-       // this.tests = new Test[6];
+       // this.tests = new Norm[6];
     }
 
     public String getObnr() {
@@ -52,33 +52,33 @@ public class Report implements Iterable<Test>{
         return EUT;
     }
     
-    public void addTest(Test test) {
-        this.tests[N++] = test;
+    public void addNorm(Norm norm) {
+        this.norms[N++] = norm;
     }
     
-     public void deleteTest(int index) {
-        for(int i = index + 1; i < this.tests.length; i++) {
-            this.tests[i - 1] =  this.tests[i];
+     public void deleteNorm(int index) {
+        for(int i = index + 1; i < this.norms.length; i++) {
+            this.norms[i - 1] =  this.norms[i];
         }
-        this.tests[this.tests.length - 1] = null;
+        this.norms[this.norms.length - 1] = null;
     }
     
-     public Test getTest(int index){
-        return this.tests[index];
+     public Norm getNorm(int index){
+        return this.norms[index];
     }
 
     @Override
-    public Iterator<Test> iterator() {
-        return new TestIterator();
+    public Iterator<Norm> iterator() {
+        return new NormIterator();
     }
 
-    private class TestIterator<Test> implements Iterator<Test>{
+    private class NormIterator<Norm> implements Iterator<Norm>{
 
         int i = 0;
         @Override
         public boolean hasNext() { return i<N;}
         @Override
-        public Test next() { return (Test) tests[i++];}
+        public Norm next() { return (Norm) norms[i++];}
         @Override
         public void remove(){}
 

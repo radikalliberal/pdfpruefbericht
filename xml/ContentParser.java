@@ -18,9 +18,9 @@ package xml;
 
 import DataStructure.Parameter;
 import DataStructure.Report;
-import DataStructure.Segment;
-import DataStructure.Setup;
 import DataStructure.Test;
+import DataStructure.Setup;
+import DataStructure.Norm;
 import DataStructure.device;
 import DataStructure.img;
 import java.io.IOException;
@@ -59,9 +59,9 @@ public class ContentParser extends DefaultHandler {
     
     protected Report report;
     
-    protected Test currentTest;
+    protected Norm currentNorm;
     
-    protected Segment currentSegment;
+    protected Test currentSegment;
     
     protected Setup currentSetup;
     
@@ -130,7 +130,7 @@ public class ContentParser extends DefaultHandler {
             case "Setup":
                 isSetup = true;
                 currentSetup = new Setup();
-                currentTest.addSetup(currentSetup);
+                currentNorm.addSetup(currentSetup);
                 break;
             case "img":
                 if(isSetup)
@@ -141,23 +141,23 @@ public class ContentParser extends DefaultHandler {
                                                 attributes.getValue(1)));
                 break;
 
-            case "Test":
+            case "Norm":
                 temp = attributes.getValue(2).isEmpty() ?
                         0 : Double.valueOf(attributes.getValue(3).replaceAll(",", "."));
                 humidity = attributes.getValue(0).isEmpty() ? 
                         0 : Double.valueOf(attributes.getValue(0).replaceAll(",", "."));
-                currentTest = new Test(attributes.getValue(2),
+                currentNorm = new Norm(attributes.getValue(2),
                                        temp,
                                        humidity);
-                report.addTest(currentTest);
+                report.addNorm(currentNorm);
                 break;
 
-            case "Segment":
+            case "Test":
                 isSetup = false;
-                currentSegment = new Segment(
+                currentSegment = new Test(
                                              attributes.getValue(1),
                                              attributes.getValue(0));
-                currentTest.addSegment(currentSegment);
+                currentNorm.addTest(currentSegment);
                 break;
 
             default:
