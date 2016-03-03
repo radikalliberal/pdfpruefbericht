@@ -62,8 +62,8 @@ public class PdfPruefbericht {
             document.open();
             PdfStructureTreeRoot root = writer.getStructureTreeRoot();
             root.mapRole(new PdfName("Report"), PdfName.ROOT);
-            root.mapRole(new PdfName("Test"), PdfName.SECT);
-            root.mapRole(new PdfName("Segment"), PdfName.SEPARATION);
+            root.mapRole(new PdfName("Norm"), PdfName.SECT);
+            root.mapRole(new PdfName("Test"), PdfName.SEPARATION);
             root.mapRole(new PdfName("Comment"), PdfName.CO);
             root.mapRole(new PdfName("img"), PdfName.PI);
             root.mapRole(new PdfName("log"), PdfName.L);

@@ -61,7 +61,7 @@ public class ContentParser extends DefaultHandler {
     
     protected Norm currentNorm;
     
-    protected Test currentSegment;
+    protected Test currentTest;
     
     protected Setup currentSetup;
     
@@ -115,12 +115,12 @@ public class ContentParser extends DefaultHandler {
             case "parameter":
                 int columns = 0;
                 while(attributes.getValue(columns) != null) columns++;
-                currentSegment.setColumns(columns);
+                currentTest.setColumns(columns);
                 String[] Values = new String[columns];
                 for(int i = 1; i < columns ;i++ ) {
                    Values[i-1]=attributes.getValue(i);
                 }
-                currentSegment.addParameter(new Parameter(attributes.getValue(0),Values));
+                currentTest.addParameter(new Parameter(attributes.getValue(0),Values));
                 break;
             case "device":
                 currentSetup.devices.add(new device(attributes.getValue(1),
@@ -133,12 +133,15 @@ public class ContentParser extends DefaultHandler {
                 currentNorm.addSetup(currentSetup);
                 break;
             case "img":
+                int labelidx = ("label".equals(attributes.getLocalName(0)))? 0 : 1;
+                int pathidx = ("label".equals(attributes.getLocalName(0)))? 1 : 0;
+                
                 if(isSetup)
-                    currentSetup.images.add(new img(attributes.getValue(0),
-                                                attributes.getValue(1)));
+                    currentSetup.images.add(new img(attributes.getValue(labelidx),
+                                                    attributes.getValue(pathidx)));
                 else
-                    currentSegment.addImage(new img(attributes.getValue(0),
-                                                attributes.getValue(1)));
+                    currentTest.addImage(new img(attributes.getValue(labelidx),
+                                                 attributes.getValue(pathidx)));
                 break;
 
             case "Norm":
@@ -154,10 +157,10 @@ public class ContentParser extends DefaultHandler {
 
             case "Test":
                 isSetup = false;
-                currentSegment = new Test(
+                currentTest = new Test(
                                              attributes.getValue(1),
                                              attributes.getValue(0));
-                currentNorm.addTest(currentSegment);
+                currentNorm.addTest(currentTest);
                 break;
 
             default:
@@ -188,8 +191,8 @@ public class ContentParser extends DefaultHandler {
                 if(isSetup)
                     currentSetup.addComment(s);
                 else
-                    currentSegment.addComment(s);    
-            if ("log".equals(qName)) currentSegment.setLog(s);
+                    currentTest.addComment(s);    
+            if ("log".equals(qName)) currentTest.setLog(s);
         }
     }
 }
