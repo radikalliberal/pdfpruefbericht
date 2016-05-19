@@ -38,6 +38,7 @@ import com.itextpdf.text.pdf.PdfName;
 import com.itextpdf.text.pdf.PdfStructureElement;
 import com.itextpdf.text.pdf.PdfStructureTreeRoot;
 import com.itextpdf.text.pdf.PdfWriter;
+import java.net.URISyntaxException;
 import pdf.PdfBuilder;
 
 /**
@@ -48,7 +49,7 @@ public class PdfPruefbericht {
 
    
      public static void main(String[] args)
-        throws IOException, DocumentException, SAXException, ParserConfigurationException {
+        throws IOException, DocumentException, SAXException, ParserConfigurationException, URISyntaxException {
          
         String RESULT = args[1];
         String RESOURCE = args[0];

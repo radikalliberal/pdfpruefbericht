@@ -36,8 +36,10 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.activation.MimetypesFileTypeMap;
@@ -59,20 +61,22 @@ public class PdfBuilder {
     protected Font font,headerfont,titelfont,smallertitelfont,smallerheaderfont;
     protected Paragraph p;
     protected ArrayList<device> devices;
+    protected Path jarpath;  
 
         
     public PdfBuilder(Document d, PdfWriter w, Report r) 
-            throws DocumentException, IOException {
-        this.writer = w;
-        this.document = d;
-        this.report = r;
-        this.devices = new ArrayList<>();
+            throws DocumentException, IOException, URISyntaxException {
+        writer = w;
+        document = d;
+        report = r;
+        devices = new ArrayList<>();
+        jarpath = Paths.get(PdfBuilder.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 
-    public void build() throws DocumentException, IOException {
+    public void build() throws DocumentException, IOException, URISyntaxException {
         initialise();
         TitelPage(); 
-        printTests();
+        printNorm();
         printDeviceTable();
     }
 
@@ -113,7 +117,7 @@ public class PdfBuilder {
         typesetting (document);
     }
     
-    private void printSetup(Norm test)throws IOException, DocumentException {
+    private void printSetup(Norm test)throws IOException, DocumentException, URISyntaxException {
         Setup set = test.getSet();
         p = new Paragraph("Versuchsaufbau \n", smallerheaderfont);
         p.setAlignment(Element.ALIGN_JUSTIFIED);
@@ -127,32 +131,36 @@ public class PdfBuilder {
 
     }
     
-    private void printTests() throws IOException, DocumentException {
-        for(Norm test:report) {
+    private void printNorm() throws IOException, DocumentException, URISyntaxException {
+        for(Norm norm:report) {
             document.newPage();
             column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
-            p = new Paragraph(test.getName() + "\n\n", headerfont);
+            p = new Paragraph(norm.getName() + "\n\n", headerfont);
             p.setAlignment(Element.ALIGN_JUSTIFIED);
             column.addElement(p); 
-            p = new Paragraph("Luftfeuchtigkeit: " + test.getHumidity() + "%\nTemperatur: " + test.getTemp() + "°C\n\n", font);
+            p = new Paragraph("Luftfeuchtigkeit: " + norm.getHumidity() + "%\nTemperatur: " + norm.getTemp() + "°C\n\n", font);
             p.setAlignment(Element.ALIGN_JUSTIFIED);
             column.addElement(p); 
             typesetting (document);
-            printSetup(test);
-            printSegments(test);
+            printSetup(norm);
+            printTest(norm);
             
         }
     }
 
-    private void printSegments(Norm test) throws IOException, DocumentException {
-        for(Test seg:test) {
-            p = new Paragraph(seg.getName(), smallerheaderfont);
+    private void printTest(Norm norm) throws IOException, DocumentException, URISyntaxException {
+        for(Test test:norm) {
+            if(column.getYLine() < 250){
+                document.newPage();
+                column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
+            }
+            p = new Paragraph(test.getName(), smallerheaderfont);
             p.setAlignment(Element.ALIGN_JUSTIFIED);
             column.addElement(p);
             typesetting (document);
-            printParameters(seg);
-            printImages(seg.images);
-            printComments(seg);
+            printParameters(test);
+            printImages(test.images);
+            printComments(test);
         }
     }
 
@@ -165,23 +173,25 @@ public class PdfBuilder {
         }
     }
 
-    private void printImages(List<img> items) throws IOException, DocumentException {
+    private void printImages(List<img> items) throws IOException, DocumentException, URISyntaxException {
         for(img im:items) {
             column.addElement(new Phrase(" "));
             File image = new File(im.getPath());
-            String mimeType = new MimetypesFileTypeMap().getContentType(image);
             
             try {
-                if (!image.exists()){
-                    throw new FileNotFoundException("Der Pfad \"" + im.getPath()+ "\" ist ungültig");
+                if (!image.exists() || image == null){
+                    image = new File(jarpath.getParent() +  "\\Data\\nopic.png");
+                    System.out.println("Der Pfad \"" + im.getPath()+ "\" ist ungültig");
                 }
+                String mimeType = new MimetypesFileTypeMap().getContentType(image);
                 if(!mimeType.substring(0,5).equalsIgnoreCase("image")) { //kein Bild
                     if(!util.getExtension(image).equalsIgnoreCase("png")) //Png-Dateien wurden nicht erkannt ...
-                        throw new FilerException("Die Datei "+im.getPath()+
+                        throw new FilerException("Die Datei "+image.getAbsolutePath()+
                                             " ist keine Bilddatei und kann nicht dargestellt werden.");
                 }
-
-                Image img = Image.getInstance(im.getPath());
+                
+                   
+                Image img = Image.getInstance(util.resize(image,compression).getAbsolutePath());
                 img.setAlignment(Element.ALIGN_CENTER);
                 img.scaleToFit(400, 400);
                 if((img.getScaledHeight()+100)>(column.getYLine())){
@@ -229,17 +239,23 @@ public class PdfBuilder {
         }
     }
     
-    private void printParameters(Test seg) throws DocumentException  {
-        if(!seg.parameters.isEmpty()){
+    private void printParameters(Test test) throws DocumentException  {
+        if(!test.parameters.isEmpty()){
+            int tablesize = 23*test.parameters.size()+100;
+            float spaceOnPage = column.getYLine();
+            if(tablesize > spaceOnPage){
+                    document.newPage();
+                    column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
+            }
             p = new Paragraph("\n\nParameter\n\n", smallerheaderfont);
             p.setAlignment(Element.ALIGN_JUSTIFIED);
             column.addElement(p);
             typesetting (document);
-            PdfPTable table = new PdfPTable(seg.getColumns());  
-            for(Parameter par :seg.parameters){
+            PdfPTable table = new PdfPTable(test.getColumns());  
+            for(Parameter par :test.parameters){
                 if(par==null) break;
                 table.addCell(par.getAttribute()); 
-                for(int i = 0; i < seg.getColumns() - 1; i++)
+                for(int i = 0; i < test.getColumns() - 1; i++)
                 table.addCell(par.getValue(i));
             }
             column.addElement(table);
