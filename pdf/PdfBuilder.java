@@ -23,6 +23,7 @@ import DataStructure.Setup;
 import DataStructure.Norm;
 import DataStructure.device;
 import DataStructure.img;
+import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -33,6 +34,7 @@ import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.io.File;
@@ -58,7 +60,7 @@ public class PdfBuilder {
     protected ColumnText column;
     protected PdfContentByte canvas;
     protected int figureCount;
-    protected Font font,headerfont,titelfont,smallertitelfont,smallerheaderfont;
+    protected Font font,headerfont,titelfont,smallertitelfont,smallerheaderfont,evensmallerheaderfont;
     protected Paragraph p;
     protected ArrayList<device> devices;
     protected Path jarpath;  
@@ -94,20 +96,28 @@ public class PdfBuilder {
                                     BaseFont.WINANSI, BaseFont.EMBEDDED), 15);
         font = new Font(
                 BaseFont.createFont("c:/windows/fonts/times.ttf", 
-                                    BaseFont.WINANSI, BaseFont.EMBEDDED), 12);
+                                    BaseFont.WINANSI, BaseFont.EMBEDDED), 10);
         headerfont = new Font(
                 BaseFont.createFont("c:/windows/fonts/times.ttf", 
                                     BaseFont.WINANSI, BaseFont.EMBEDDED), 18,Font.BOLD);
         smallerheaderfont = new Font(
                 BaseFont.createFont("c:/windows/fonts/times.ttf", 
                                     BaseFont.WINANSI, BaseFont.EMBEDDED), 15,Font.BOLD);
+        evensmallerheaderfont = new Font(
+                BaseFont.createFont("c:/windows/fonts/times.ttf", 
+                                    BaseFont.WINANSI, BaseFont.EMBEDDED), 14,Font.ITALIC);
         //Kopf und Fusszeile
         writer.setPageEvent(new FooterHeader( report.getEUT() + " " + report.getObnr(), writer));
     }
     
-    private void TitelPage() throws DocumentException {
+    private void TitelPage() throws DocumentException, BadElementException, IOException {
+        File image = new File("data/titel.png");
         document.newPage();
         column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
+        Image img = Image.getInstance(image.getAbsolutePath());
+        img.setAlignment(Element.ALIGN_CENTER);
+        img.scaleToFit(400, 400);
+        column.addElement(img);
         p = new Paragraph("\n\n\n\nEMV Prüfbericht für die Baugruppe \n"
                 + report.getEUT() +" \n " +report.getObnr(), titelfont);
         p.setAlignment(Element.ALIGN_CENTER);
@@ -121,7 +131,7 @@ public class PdfBuilder {
     
     private void printSetup(Norm test)throws IOException, DocumentException, URISyntaxException {
         Setup set = test.getSet();
-        p = new Paragraph("Versuchsaufbau \n", smallerheaderfont);
+        p = new Paragraph("Versuchsaufbau \n", evensmallerheaderfont);
         p.setAlignment(Element.ALIGN_JUSTIFIED);
         column.addElement(p); 
         typesetting (document);
@@ -182,7 +192,7 @@ public class PdfBuilder {
             
             try {
                 if (!image.exists() || image == null){
-                    image = new File(jarpath.getParent() +  "\\Data\\nopic.png");
+                    image = new File(jarpath.getParent() +  "\\data\\nopic.png");
                     System.out.println("Der Pfad \"" + im.getPath()+ "\" ist ungültig");
                 }
                 String mimeType = new MimetypesFileTypeMap().getContentType(image);
@@ -195,7 +205,7 @@ public class PdfBuilder {
                    
                 Image img = Image.getInstance(util.resize(image,compression).getAbsolutePath());
                 img.setAlignment(Element.ALIGN_CENTER);
-                img.scaleToFit(400, 400);
+                img.scaleToFit(365, 400);
                 if((img.getScaledHeight()+100)>(column.getYLine())){
                     document.newPage();
                     column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
@@ -222,19 +232,27 @@ public class PdfBuilder {
         }
         if(!devices.isEmpty()) {
             document.newPage();
-            column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
-            p = new Paragraph("Geräte\n\n", smallerheaderfont);
+            column.setSimpleColumn(util.m2p(10), util.m2p(10),util.m2p(190),util.m2p(277));
+            p = new Paragraph("\n\n      Geräte\n\n", smallerheaderfont);
             p.setAlignment(Element.ALIGN_JUSTIFIED);
             column.addElement(p);
             typesetting (document);
-            PdfPTable table = new PdfPTable(3);    
+            PdfPTable table = new PdfPTable(4);  
+            float[] columnWidth = {util.m2p(30),util.m2p(55),util.m2p(30),util.m2p(25)};
+            table.setTotalWidth(columnWidth);
+            table.addCell("Hersteller");
             table.addCell("Name");
             table.addCell("Seriennummer");
             table.addCell("letzte Kalibrierung");
             for(device dev :devices){
-                table.addCell(dev.getName()); 
-                table.addCell(dev.getSerialnumber());
-                table.addCell(dev.getLastCalibration());
+                PdfPCell cell = new PdfPCell(new Phrase(10,dev.getHersteller(),font));
+                table.addCell(cell);
+                cell = new PdfPCell(new Phrase(10,dev.getName(),font));
+                table.addCell(cell);
+                cell = new PdfPCell(new Phrase(10,dev.getSerialnumber(),font));
+                table.addCell(cell);
+                cell = new PdfPCell(new Phrase(10,dev.getLastCalibration(),font));
+                table.addCell(cell);
             }
             column.addElement(table);
             typesetting (document);
@@ -243,23 +261,26 @@ public class PdfBuilder {
     
     private void printParameters(Test test) throws DocumentException  {
         if(!test.parameters.isEmpty()){
-            int tablesize = 23*test.parameters.size()+100;
+           
+            p = new Paragraph("\n\n        Parameter\n\n", evensmallerheaderfont);
+            p.setAlignment(Element.ALIGN_JUSTIFIED);
+            PdfPTable table = new PdfPTable(test.getColumns());  
+            for(Parameter par :test.parameters){
+                if(par==null) break;
+                PdfPCell cell = new PdfPCell(new Phrase(10,par.getAttribute(),font));
+                table.addCell(cell); 
+                for(int i = 0; i < test.getColumns() - 1; i++)
+                    cell = new PdfPCell(new Phrase(10,par.getValue(i),font));
+                table.addCell(cell);
+            }
+            table.setTotalWidth(util.m2p(190));
+            float tablesize = table.calculateHeights() + util.m2p(20) + 30 * 4;
             float spaceOnPage = column.getYLine();
             if(tablesize > spaceOnPage){
                     document.newPage();
                     column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
             }
-            p = new Paragraph("\n\nParameter\n\n", smallerheaderfont);
-            p.setAlignment(Element.ALIGN_JUSTIFIED);
             column.addElement(p);
-            typesetting (document);
-            PdfPTable table = new PdfPTable(test.getColumns());  
-            for(Parameter par :test.parameters){
-                if(par==null) break;
-                table.addCell(par.getAttribute()); 
-                for(int i = 0; i < test.getColumns() - 1; i++)
-                table.addCell(par.getValue(i));
-            }
             column.addElement(table);
             typesetting (document);
         }

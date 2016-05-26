@@ -20,11 +20,18 @@ public class device implements Comparable<device>{
     private final String name;
     private final String serialnumber;
     private final String lastCalibration;
+    private final String hersteller;
 
-    public device(String name, String serialnumber, String lastCalibration) {
+    public device(String hersteller, String name, String serialnumber, String lastCalibration) {
+        this.hersteller = hersteller;
         this.name = name;
         this.serialnumber = serialnumber;
         this.lastCalibration = lastCalibration;
+        
+    }
+    
+    public String getHersteller() {
+        return hersteller;
     }
 
     public String getName() {

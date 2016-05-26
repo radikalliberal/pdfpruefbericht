@@ -123,9 +123,12 @@ public class ContentParser extends DefaultHandler {
                 currentTest.addParameter(new Parameter(attributes.getValue(0),Values));
                 break;
             case "device":
-                currentSetup.devices.add(new device(attributes.getValue(1),
-                                                attributes.getValue(2),
-                                                attributes.getValue(0)));
+                currentSetup.devices.add(
+                        new device(
+                            attributes.getValue(1),
+                            attributes.getValue(2),
+                            attributes.getValue(3),
+                            attributes.getValue(0)));
                 break;
             case "Setup":
                 isSetup = true;

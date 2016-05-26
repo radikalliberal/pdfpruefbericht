@@ -17,20 +17,16 @@
 package utilities;
 
 import com.itextpdf.text.BadElementException;
-import com.itextpdf.text.Image;
 import com.itextpdf.text.Utilities;
-import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
+import javax.activation.MimetypesFileTypeMap;
+import javax.annotation.processing.FilerException;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -47,39 +43,57 @@ public class util {
         return f.getName().substring(f.getName().length()-3,f.getName().length());
     }
     
+    private static boolean isPng(File img) {
+        return getExtension(img).equalsIgnoreCase("png");
+    }
+    
     public static File resize(File img, float quality) throws IOException, BadElementException {
         
-        BufferedImage bufImage = ImageIO.read(img);
-        int img_width = 600;
-        int img_height = (int)(bufImage.getHeight()/((double)(bufImage.getWidth()/img_width)));
-        int type = bufImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : bufImage.getType();
+        if(!isPng(img)) { 
+            
+            BufferedImage bufImage = ImageIO.read(img);
+            int img_width = 600;
+            int img_height = (int)(bufImage.getHeight()/((double)(bufImage.getWidth()/img_width)));
+            int type = bufImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : bufImage.getType();
+
+
+            BufferedImage resizedImage = new BufferedImage(img_width, img_height, type);
+            Graphics2D g = resizedImage.createGraphics();
+            g.drawImage(bufImage, 0, 0, img_width, img_height, null);
+            g.dispose();
+            
+            OutputStream os;
+            ImageOutputStream ios;
+            ImageWriter writer;
+            File compressedImageFile;
+            
+            compressedImageFile = new File( System.getProperty("user.home")+"/AppData/Local/Temp/temp.jpg");
+            os = new FileOutputStream(compressedImageFile);
+
+            Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("jpg");
+            writer = (ImageWriter) writers.next();
+
+            ios = ImageIO.createImageOutputStream(os);
+            writer.setOutput(ios);
+
+            ImageWriteParam param = writer.getDefaultWriteParam();
+
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality);
+            writer.write(null, new IIOImage(resizedImage, null, null), param);
+            
+            os.close();
+            ios.close();
+            writer.dispose();
+
+            return compressedImageFile; 
+            
+        } else {
+            return img;
+
+        }
         
-                
-        BufferedImage resizedImage = new BufferedImage(img_height, img_width, type);
-	Graphics2D g = resizedImage.createGraphics();
-	g.drawImage(bufImage, 0, 0, img_height,img_width, null);
-	g.dispose();
         
-        File compressedImageFile = new File( System.getProperty("user.home")+"/AppData/Local/Temp/temp.jpg");
-        OutputStream os = new FileOutputStream(compressedImageFile);
-
-        Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("jpg");
-        ImageWriter writer = (ImageWriter) writers.next();
-
-        ImageOutputStream ios = ImageIO.createImageOutputStream(os);
-        writer.setOutput(ios);
-
-        ImageWriteParam param = writer.getDefaultWriteParam();
-
-        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        param.setCompressionQuality(quality);
-        writer.write(null, new IIOImage(resizedImage, null, null), param);
-
-        os.close();
-        ios.close();
-        writer.dispose();
-        
-        return compressedImageFile;
     }
     
     
