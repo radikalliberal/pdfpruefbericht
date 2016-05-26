@@ -62,15 +62,17 @@ public class PdfBuilder {
     protected Paragraph p;
     protected ArrayList<device> devices;
     protected Path jarpath;  
+    protected float compression;
 
         
-    public PdfBuilder(Document d, PdfWriter w, Report r) 
+    public PdfBuilder(Document d, PdfWriter w, Report r, float comp) 
             throws DocumentException, IOException, URISyntaxException {
         writer = w;
         document = d;
         report = r;
         devices = new ArrayList<>();
         jarpath = Paths.get(PdfBuilder.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        compression = comp;
     }
 
     public void build() throws DocumentException, IOException, URISyntaxException {

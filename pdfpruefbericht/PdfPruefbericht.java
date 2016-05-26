@@ -54,6 +54,14 @@ public class PdfPruefbericht {
         String RESULT = args[1];
         String RESOURCE = args[0];
         ContentParser cp;
+        float compression;
+        
+        try{
+            compression = Float.parseFloat(args[2]);
+        } catch (NumberFormatException e){
+            System.out.println("Kompresion konnte nicht geparsed werden ... : " + e.getMessage());
+            compression = 0.5f;
+        }
         
         try{
             Document document = new Document(PageSize.A4);
@@ -83,7 +91,7 @@ public class PdfPruefbericht {
                 new InputSource(new FileInputStream(RESOURCE)),
                     cp
                 );
-            PdfBuilder pdf = new PdfBuilder(document,writer,cp.getReport());
+            PdfBuilder pdf = new PdfBuilder(document,writer,cp.getReport(), compression);
             pdf.build();
             document.close();
         }

@@ -60,8 +60,8 @@ public class util {
 	g.drawImage(bufImage, 0, 0, img_height,img_width, null);
 	g.dispose();
         
-        File compressedImageFile = new File("temp.jpg");
-        OutputStream os =new FileOutputStream(compressedImageFile);
+        File compressedImageFile = new File( System.getProperty("user.home")+"/AppData/Local/Temp/temp.jpg");
+        OutputStream os = new FileOutputStream(compressedImageFile);
 
         Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("jpg");
         ImageWriter writer = (ImageWriter) writers.next();
