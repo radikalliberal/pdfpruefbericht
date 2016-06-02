@@ -111,7 +111,7 @@ public class PdfBuilder {
     }
     
     private void TitelPage() throws DocumentException, BadElementException, IOException {
-        File image = new File("data/titel.png");
+        File image = new File(jarpath.getParent() + "\\data\\titel.png");
         document.newPage();
         column.setSimpleColumn(util.m2p(20), util.m2p(20),util.m2p(190),util.m2p(277));
         Image img = Image.getInstance(image.getAbsolutePath());
@@ -191,7 +191,7 @@ public class PdfBuilder {
             File image = new File(im.getPath());
             
             try {
-                if (!image.exists() || image == null){
+                if (!image.exists()){
                     image = new File(jarpath.getParent() +  "\\data\\nopic.png");
                     System.out.println("Der Pfad \"" + im.getPath()+ "\" ist ungültig");
                 }
